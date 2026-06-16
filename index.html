@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <style>
+        body { margin: 0; background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+        #juego { width: 700px; height: 250px; background: #87CEEB; border: 8px solid #000; position: relative; overflow: hidden; border-radius: 15px; }
+        
+        #personita { width: 60px; height: 100px; background-image: url('persona.png'); background-size: cover; position: absolute; bottom: 0; left: 80px; z-index: 2; }
+        #gorila { width: 120px; height: 120px; background-image: url('gorila.png'); background-size: cover; position: absolute; bottom: 0; left: 10px; z-index: 1; }
+        #kaka { width: 60px; height: 50px; background-image: url('kaka.png'); background-size: cover; position: absolute; bottom: 0; left: 700px; z-index: 2; }
+        
+        /* Mensaje de Game Over estilizado */
+        #mensajeGameOver { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; z-index: 3; text-align: center; }
+        
+        #score { position: absolute; top: 10px; right: 20px; font-size: 20px; font-weight: bold; z-index: 3; }
+
+        .saltar { animation: salto 0.5s ease-out; }
+        @keyframes salto { 0% { bottom: 0; } 50% { bottom: 150px; } 100% { bottom: 0; } }
+        
+        @keyframes moverKaka { from { left: 700px; } to { left: -60px; } }
+        .animarKaka { animation: moverKaka 2s infinite linear; }
+    </style>
+</head>
+<body>
+    <div id="juego">
+        <div id="score">Score: 0</div>
+        <div id="gorila"></div>
+        <div id="personita"></div>
+        <div id="kaka" class="animarKaka"></div>
+        <div id="mensajeGameOver"><h1>¡Uy, eso dolerá!</h1><button onclick="location.reload()">Reiniciar</button></div>
+    </div>
+
+    <script>
+        const persona = document.getElementById('personita');
+        const kaka = document.getElementById('kaka');
+        const scoreElement = document.getElementById('score');
+        const gameOverDiv = document.getElementById('mensajeGameOver');
+        
+        let score = 0;
+        let velocidad = 2; // Segundos iniciales de la animación
+
+        // Aumentar score cada segundo
+        setInterval(() => {
+            if (gameOverDiv.style.display !== 'block') {
+                score++;
+                scoreElement.innerText = "Score: " + score;
+                
+                // Aumentar velocidad cada 10 puntos
+                if (score % 10 === 0) {
+                    velocidad -= 0.1;
+                    kaka.style.animationDuration = velocidad + "s";
+                }
+            }
+        }, 1000);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (!persona.classList.contains('saltar')) {
+                    persona.classList.add('saltar');
+                    setTimeout(() => persona.classList.remove('saltar'), 500);
+                }
+            }
+        });
+
+        // Colisión
+        let verificarColision = setInterval(() => {
+            let personaTop = parseInt(window.getComputedStyle(persona).getPropertyValue("bottom"));
+            let kakaLeft = parseInt(window.getComputedStyle(kaka).getPropertyValue("left"));
+
+            if (kakaLeft < 120 && kakaLeft > 50 && personaTop < 50) {
+                kaka.style.animation = "none";
+                kaka.style.display = "none";
+                gameOverDiv.style.display = 'block';
+                clearInterval(verificarColision);
+            }
+        }, 10);
+    </script>
+</body>
+</html>
